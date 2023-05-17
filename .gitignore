@@ -1,3 +1,4 @@
 test/
 output_files/
 all_in_one.ipynb
+__pycache__/
