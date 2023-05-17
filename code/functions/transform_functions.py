@@ -38,11 +38,12 @@ def flatten(OCEL, on, printen = False):
 #generating the csv files for the imput
 
 def gen_flatted_comp_csv(OCEL,flattedby, drops_col, printen = False):
-    enriched_log = OCEL.set_index(flattedby).drop(columns=drops_col)
+
+    OCEL = OCEL.rename(columns={flattedby:'Case_ID'})
+    enriched_log = OCEL.set_index('Case_ID').reset_index().drop(columns=drops_col).sort_values(['Case_ID','Timestamp'])
     enriched_log['amount_of_items'] = [len(t) for t in enriched_log['Items']]
-    
     enriched_log.to_csv('../data/orders_complete_enriched.csv')
-    single_log = OCEL.set_index(flattedby)[['Activity','Timestamp']]
+    single_log = OCEL.set_index('Case_ID').reset_index()[['Case_ID','Activity','Timestamp']].sort_values(['Case_ID','Timestamp'])
     single_log.to_csv('../data/orders_complete_single.csv')
     if printen:
         pd.display(enriched_log[120:140])
