@@ -1,8 +1,4 @@
-import numpy as np
-from tabulate import tabulate
 import pandas as pd
-import csv
-import ocel as ol
 from sklearn.calibration import LabelEncoder
 
 ## preparing the cel
@@ -44,14 +40,12 @@ def flatten(OCEL, on, printen = False):
 def gen_flatted_comp_csv(OCEL,flattedby, drops_col, printen = False):
     enriched_log = OCEL.set_index(flattedby).drop(columns=drops_col)
     enriched_log['amount_of_items'] = [len(t) for t in enriched_log['Items']]
-    print(enriched_log)
+    
     enriched_log.to_csv('../data/orders_complete_enriched.csv')
     single_log = OCEL.set_index(flattedby)[['Activity','Timestamp']]
     single_log.to_csv('../data/orders_complete_single.csv')
-     
-
     if printen:
         pd.display(enriched_log[120:140])
         pd.display(single_log[120:140])
-    
+    return enriched_log, single_log
     
