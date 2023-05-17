@@ -3,10 +3,11 @@ from operator import itemgetter
 import numpy as np
 from numpy.compat import unicode
 
-def folding_this(lines,Ptimeseqs,Ptimeseqs2,Ptimeseqs3,Ptimeseqs4,PtimeseqsF,numlines,seeded = 42):
+def folding_this(lines,Ptimeseqs,Ptimeseqs2,Ptimeseqs3,Ptimeseqs4,PtimeseqsF,seeded = 42):
     np.random.seed(seeded)
-    indices = np.random.permutation(numlines - 1)
-    elems_per_fold = int(round(numlines / 3))
+    numlines = len(lines)
+    indices = np.random.permutation(numlines)
+    elems_per_fold = int(round((numlines+1) / 3))
 
     idx1 = indices[:elems_per_fold]
     idx2 = indices[elems_per_fold:2 * elems_per_fold]
