@@ -1,4 +1,4 @@
-,Case_ID,Activity,Timestamp,Items,Customers,Packages,amount_of_items
+,Case_ID,Activity,Timestamp,Items,Customers,Packages,Amount_Items
 0,990001,A,2019-05-20 09:07:47,"['880001', '880004', '880003', '880002']",a,,4
 3,990001,C,2019-05-20 11:13:54,"['880001', '880004', '880003', '880002']",a,,4
 4,990001,B,2019-05-20 11:20:13,['880002'],a,,1
