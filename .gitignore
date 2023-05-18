@@ -1,4 +1,3 @@
 test/
-output_files/
-all_in_one.ipynb
 __pycache__/
+parts_i_might_use-later.ipynb
