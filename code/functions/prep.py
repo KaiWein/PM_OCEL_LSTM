@@ -97,6 +97,7 @@ def gen_features(OCEL, add_last_case=False, columns_to_encode = ['Activity', 'Cu
     OCEL = pd.concat([OCEL, shifted_features.add_prefix('Next_')], axis=1)
     if not add_last_case:
         OCEL = OCEL.loc[OCEL['Activity'] != '!']
+    OCEL['Position'] = OCEL.groupby('Case_ID').cumcount() + 1
     OCEL = OCEL.sort_values(['Case_ID','Timestamp'])
     return OCEL
 

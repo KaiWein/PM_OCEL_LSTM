@@ -14,8 +14,8 @@ def folding_train_test(OCEL, split = 2/3 , random_state = 42, csvsave = False):
     test_case_ids = shuffled_case_ids[split_index:]
 
     # Split the data based on case IDs into training and test sets
-    train_data = OCEL[OCEL['Case_ID'].isin(train_case_ids)]
-    test_data = OCEL[OCEL['Case_ID'].isin(test_case_ids)]
+    train_data = OCEL[OCEL['Case_ID'].isin(train_case_ids)].reset_index(drop= True)
+    test_data = OCEL[OCEL['Case_ID'].isin(test_case_ids)].reset_index(drop= True)
     if csvsave:
         train_data.to_csv('./output_files/folds/train.csv')
         test_data.to_csv('./output_files/folds/test.csv')
