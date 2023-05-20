@@ -1,8 +1,14 @@
 import pandas as pd
 
-act_for_filtered_order = ['place order','confirm order','payment reminder','pay order']
-act_for_filtered_item = ['place order','confirm order', 'item out of stock', 'reorder item', 'pick item' , 'create package', 'send package', 'failed delivery', 'package delivered']
-act_for_filtered_pack = ['create package', 'send package', 'failed delivery', 'package delivered']
+def act_filter(on):
+    if on == 'Orders':
+        return ['place order','confirm order','payment reminder','pay order']
+    elif on == 'Items':
+        return ['place order','confirm order', 'item out of stock', 'reorder item', 'pick item' , 'create package', 'send package', 'failed delivery', 'package delivered']
+    elif on == 'Packages':
+        return ['create package', 'send package', 'failed delivery', 'package delivered']
+    else:
+        print('Wrong input must be Orders, Items or Packages')
 
 ## preparing the cel
 def prepare_flat_ocel(fn, flatten_on, flattening = True,filter = None, printen_flat = False):
@@ -62,9 +68,9 @@ def gen_enriched_single_plus_csv(OCEL,flatted_by, drops_col,csvname, printen = F
     if printen:
         pd.display(enriched_log[120:140])
         pd.display(single_log[120:140])
-    return enriched_log, single_log
+    return enriched_log
 
-def gen_features(OCEL, add_last_case=False, columns_to_encode = ['Activity', 'Customers']):
+def generate_features(OCEL, add_last_case=False, columns_to_encode = ['Activity', 'Customers']):
     OCEL = time_features(OCEL=OCEL)
     # ad the ! as an indicater for the end of trace
     if ('!' not in list(OCEL['Activity'].unique())):
@@ -80,12 +86,10 @@ def gen_features(OCEL, add_last_case=False, columns_to_encode = ['Activity', 'Cu
         new_rows['Timestamp'] = new_rows['Case_ID'].map(max_timestamps)
         # Concatenate the new rows with the original DataFrame, sort by 'Case_ID' and 'Timestamp'
         OCEL = pd.concat([OCEL, new_rows], ignore_index=True).sort_values(['Case_ID','Timestamp'])
-        
     
     # gen features thath sayes if it is in package
     if 'Packages' in OCEL.columns:
         OCEL['In_Package'] = (OCEL['Packages'] != "").astype(int)
-
     
     ## one hot encoding
     OCEL = onehot_encode(OCEL, columns_to_encode)

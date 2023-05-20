@@ -5,15 +5,25 @@ from numpy.compat import unicode
 from sklearn.utils import shuffle
 import pandas as pd
 
-def folding_train_test(OCEL, split = 2/3 , random_state = 42, csvsave = False):
+def folding_train_test(OCEL, split = 2/3 , random_state = 42, csvsave = False, old_ver = False):
     case_ids = OCEL['Case_ID'].unique()
-    shuffled_case_ids = shuffle(case_ids, random_state=random_state)
-
-    split_index = int( split * (len(shuffled_case_ids)+1))
-    train_case_ids = shuffled_case_ids[:split_index]
-    test_case_ids = shuffled_case_ids[split_index:]
-
+    # 
+    if old_ver:
+        np.random.seed(random_state)
+        numlines = len(case_ids)
+        indices = np.random.permutation(numlines)
+        elems_per_fold = 2 * int(round((numlines+1) / 3))
+        idx1 = indices[:elems_per_fold]
+        idx3 = indices[elems_per_fold:]
+        train_case_ids = case_ids[idx1]
+        test_case_ids = case_ids[idx3]  
+    else: 
+        shuffled_case_ids = shuffle(case_ids, random_state=random_state)
+        split_index = int( split * (len(shuffled_case_ids)+1))
+        train_case_ids = shuffled_case_ids[:split_index]
+        test_case_ids = shuffled_case_ids[split_index:]
     # Split the data based on case IDs into training and test sets
+
     train_data = OCEL[OCEL['Case_ID'].isin(train_case_ids)].reset_index(drop= True)
     test_data = OCEL[OCEL['Case_ID'].isin(test_case_ids)].reset_index(drop= True)
     if csvsave:

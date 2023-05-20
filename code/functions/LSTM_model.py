@@ -11,20 +11,20 @@ def LSTM_MODEL(X, y_a, y_t, y_tr,filename):
     target_act_length = y_a.shape[1]
     main_input = Input(shape=(max_trace_length, num_of_features), name='main_input')
     # train a 2-layer LSTM with one shared layer
-    l1 = LSTM(100, implementation=2, kernel_initializer='glorot_uniform', return_sequences=True, dropout=0.2)(
-        main_input)  # the shared layer
+    # the shared layer
+    l1 = LSTM(100, implementation=2, kernel_initializer='glorot_uniform', return_sequences=True, dropout=0.2)(main_input)  
     b1 = tf.keras.layers.BatchNormalization()(l1)
-    l2_1 = LSTM(100, implementation=2, kernel_initializer='glorot_uniform', return_sequences=False, dropout=0.2)(
-        b1)  # the layer specialized in activity prediction
+     # the layer specialized in activity prediction
+    l2_1 = LSTM(100, implementation=2, kernel_initializer='glorot_uniform', return_sequences=False, dropout=0.2)(b1) 
     b2_1 = tf.keras.layers.BatchNormalization()(l2_1)
-    l2_2 = LSTM(100, implementation=2, kernel_initializer='glorot_uniform', return_sequences=False, dropout=0.2)(
-        b1)  # the layer specialized in time prediction
+    # the layer specialized in time prediction
+    l2_2 = LSTM(100, implementation=2, kernel_initializer='glorot_uniform', return_sequences=False, dropout=0.2)(b1)  
     b2_2 = tf.keras.layers.BatchNormalization()(l2_2)
-    l2_3 = LSTM(100, implementation=2, kernel_initializer='glorot_uniform', return_sequences=False, dropout=0.2)(
-        b1)  # the layer specialized in time remaining prediction
+    # the layer specialized in time remaining prediction
+    l2_3 = LSTM(100, implementation=2, kernel_initializer='glorot_uniform', return_sequences=False, dropout=0.2)(b1)  
     b2_3 = tf.keras.layers.BatchNormalization()(l2_3)
-    act_output = Dense(target_act_length, activation='softmax', kernel_initializer='glorot_uniform', name='act_output')(
-        b2_1)
+
+    act_output = Dense(target_act_length, activation='softmax', kernel_initializer='glorot_uniform', name='act_output')(b2_1)
     time_output = Dense(1, kernel_initializer='glorot_uniform', name='time_output')(b2_2)
 
     timeR_output = Dense(1, kernel_initializer='glorot_uniform', name='timeR_output')(b2_3)
