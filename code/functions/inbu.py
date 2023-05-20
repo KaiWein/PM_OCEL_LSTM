@@ -1,7 +1,7 @@
 import numpy as np 
 from functions import prep
 
-def generating_inputs(OCEL, taf,act,custf, num_of_features,divisor_next, divisor_since, divisor_remaining):
+def generating_inputs(OCEL,num_of_features, taf,act,custf,divisor_next, divisor_since, divisor_remaining):
     max_trace_length = prep.gen_traces_and_maxlength_of_trace(OCEL)[1]
     number_of_train_cases = len(OCEL)
     ## taf = target activity features
