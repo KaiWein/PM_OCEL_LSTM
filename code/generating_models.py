@@ -9,21 +9,30 @@ flatten_by = input("Enter the value for flatten_by (Orders, Items or Packages): 
 single_log = input("Enter the value for single_log (True/False): ")
 complete = input("Enter the value for complete (True/False): ")
 
-# Convert input values to the desired data types if needed
-# For example, if single_log and complete should be boolean values
-single_log = single_log.lower() == 'true'
-complete = complete.lower() == 'true'
+# Error handling for invalid input values
+if flatten_by not in ['Orders', 'Items', 'Packages']:
+    raise ValueError("Wrong Input: flatten_by must be one of ['Orders', 'Items', 'Packages']")
 
-drops_col_order = ["weight", "price", "Event_ID", 'Products']
-time_feat = ['Time_Diff', 'Time_Since_Start', 'Time_Since_Midnight','Weekday']
-other_features = ['Amount_Items','In_Package','Position']
+if single_log.lower() not in ['true', 'false', '1', '0']:
+    raise ValueError("Wrong Input: single_log must be a boolean value (True/False)")
 
+if complete.lower() not in ['true', 'false', '1', '0']:
+    raise ValueError("Wrong Input: complete must be a boolean value (True/False)")
+
+# Convert input values to boolean
+single_log = single_log.lower() in ['true', '1']
+complete = complete.lower() in ['true', '1'] 
 if complete:
     csvname = flatten_by  + '_complete'
     fl = None
 else:
     csvname = flatten_by  + '_filter'
     fl = prep.act_filter(flatten_by )
+
+time_feat = ['Time_Diff', 'Time_Since_Start', 'Time_Since_Midnight','Weekday']
+other_features = ['Amount_Items','In_Package','Position']
+drops_col_order = ["weight", "price", "Event_ID", 'Products']
+
 ## prep the ocel and readin
 ocel, act_dict, cust_dict = prep.prepare_flat_ocel(source, flatten_on= flatten_by , filter= fl)
 print(act_dict)

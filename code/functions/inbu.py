@@ -27,14 +27,16 @@ def generating_inputs(OCEL,num_of_features, taf,act ,divisor_next, divisor_since
     pos_Time_Since_Start = onehot_offset + 2
     pos_Time_Since_Midnight = onehot_offset + 3
     pos_Weekday = onehot_offset + 4
-    position_values = OCEL['Position'].values
+    
 
     pos = OCEL['Position'].values
     act_values = OCEL[act].values
+    position_values = OCEL['Position'].values
     time_diff_values = OCEL['Time_Diff'].values / divisor_next
     time_start_values = OCEL['Time_Since_Start'].values / divisor_since
     time_midnight_values = OCEL['Time_Since_Midnight'].values / 86400
     weekday_values = OCEL['Weekday'].values / 7
+    
     if not single:
         for i in range(number_of_train_cases):
             posi = pos[i]
@@ -50,7 +52,7 @@ def generating_inputs(OCEL,num_of_features, taf,act ,divisor_next, divisor_since
             X[i, leftpad:, pos_Amount_Items] = amount_items_values[i - posi + 1:i + 1][::]
             X[i, leftpad:, pos_In_Package] = in_package_values[i - posi + 1:i + 1][::]
             
-    else:
+    elif single:
         for i in range(number_of_train_cases):
             posi = pos[i]
             leftpad = max_trace_length - posi
