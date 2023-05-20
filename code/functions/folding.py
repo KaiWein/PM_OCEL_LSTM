@@ -2,8 +2,27 @@ import csv
 from operator import itemgetter
 import numpy as np
 from numpy.compat import unicode
+from sklearn.utils import shuffle
+import pandas as pd
 
-def folding_this(lines,Ptimeseqs,Ptimeseqs2,Ptimeseqs3,Ptimeseqs4,nb_itemseqs,PtimeseqsF,seeded = 42, train =True):
+def folding_train_test(OCEL, split = 2/3 , random_state = 42, csvsave = False):
+    case_ids = OCEL['Case_ID'].unique()
+    shuffled_case_ids = shuffle(case_ids, random_state=random_state)
+
+    split_index = int( split * (len(shuffled_case_ids)+1))
+    train_case_ids = shuffled_case_ids[:split_index]
+    test_case_ids = shuffled_case_ids[split_index:]
+
+    # Split the data based on case IDs into training and test sets
+    train_data = OCEL[OCEL['Case_ID'].isin(train_case_ids)]
+    test_data = OCEL[OCEL['Case_ID'].isin(test_case_ids)]
+    if csvsave:
+        train_data.to_csv('./output_files/folds/train.csv')
+        test_data.to_csv('./output_files/folds/test.csv')
+    return train_data, test_data
+
+
+def folding_based_arrays(lines,Ptimeseqs,Ptimeseqs2,Ptimeseqs3,Ptimeseqs4,nb_itemseqs,PtimeseqsF,seeded = 42, train =True):
     np.random.seed(seeded)
     numlines = len(lines)
     indices = np.random.permutation(numlines)
@@ -22,7 +41,7 @@ def folding_this(lines,Ptimeseqs,Ptimeseqs2,Ptimeseqs3,Ptimeseqs4,nb_itemseqs,Pt
     fold1_t5 = list(itemgetter(*idx1)(nb_itemseqs))
     fold1_t6 = list(itemgetter(*idx1)(PtimeseqsF))
 
-    with open('./output_files/folds/fold1.csv', 'w') as csvfile:
+    with open('./output_files/folds/fold1_old.csv', 'w') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         for row, timeseq in zip(fold1, fold1_t):
             spamwriter.writerow([unicode(s) + '#{}'.format(t) for s, t in zip(row, timeseq)])
@@ -34,7 +53,7 @@ def folding_this(lines,Ptimeseqs,Ptimeseqs2,Ptimeseqs3,Ptimeseqs4,nb_itemseqs,Pt
     fold2_t4 = list(itemgetter(*idx2)(Ptimeseqs4))
     fold2_t5 = list(itemgetter(*idx2)(nb_itemseqs))
     fold2_t6 = list(itemgetter(*idx2)(PtimeseqsF))
-    with open('./output_files/folds/fold2.csv', 'w') as csvfile:
+    with open('./output_files/folds/fold2_old.csv', 'w') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         for row, timeseq in zip(fold2, fold2_t):
             spamwriter.writerow([unicode(s) + '#{}'.format(t) for s, t in zip(row, timeseq)])
@@ -47,7 +66,7 @@ def folding_this(lines,Ptimeseqs,Ptimeseqs2,Ptimeseqs3,Ptimeseqs4,nb_itemseqs,Pt
     fold3_t4 = list(itemgetter(*idx3)(Ptimeseqs4))
     fold3_t5 = list(itemgetter(*idx3)(nb_itemseqs))
     fold3_t6 = list(itemgetter(*idx3)(PtimeseqsF))
-    with open('./output_files/folds/fold3.csv', 'w') as csvfile:
+    with open('./output_files/folds/fold3_old.csv', 'w') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         for row, timeseq in zip(fold3, fold3_t):
             spamwriter.writerow(
