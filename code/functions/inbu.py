@@ -1,17 +1,18 @@
 import numpy as np
 from functions import prep
 
-def generating_inputs(OCEL, num_of_features, max_trace_length, taf, act, divisor_next, divisor_since, divisor_remaining, single=False, custf=None, test=False, prefix_length=None):
+def generating_inputs(OCEL, num_of_features, max_trace_length, taf, act, divisor_next, divisor_since, divisor_remaining, single=False, custf=None, test=False, prefix_length=0):
+ 
+
+    trace_length = OCEL['Trace_Len'].values
+    OCEL = OCEL[trace_length >= prefix_length].reset_index(drop= True)
+    
     number_of_train_cases = len(OCEL)
     act_pos = len(act) 
-    # Adjust max_trace_length if prefix_length is specified
-    if prefix_length is not None:
-        max_trace_length = prefix_length + 1
+    if prefix_length != 0:
+        max_trace_length = prefix_length
     else:
-        prefix_length = max_trace_length + 1 
-    
-
-    # taf = target activity features
+        prefix_length = max_trace_length + 1
     X = np.zeros((number_of_train_cases, max_trace_length, num_of_features), dtype=np.float32)
 
     if not single and custf is not None:
@@ -34,6 +35,7 @@ def generating_inputs(OCEL, num_of_features, max_trace_length, taf, act, divisor
     pos_Weekday = onehot_offset + 4
 
     pos = OCEL['Position'].values
+    trace_length = OCEL['Trace_Len'].values
     act_values = OCEL[act].values[: :] 
     position_values = OCEL['Position'].values
     time_diff_values = OCEL['Time_Diff'].values / divisor_next
@@ -44,8 +46,6 @@ def generating_inputs(OCEL, num_of_features, max_trace_length, taf, act, divisor
     if not single:
         for i in range(number_of_train_cases):
             posi = min(pos[i], prefix_length)
-            if posi > max_trace_length:
-                continue
             leftpad = max_trace_length - posi
 
             X[i, leftpad:, :act_pos] = act_values[i - posi + 1:i + 1, :]

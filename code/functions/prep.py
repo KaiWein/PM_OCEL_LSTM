@@ -97,11 +97,13 @@ def generate_features(OCEL, add_last_case=False, columns_to_encode = ['Activity'
     # Group by 'Case_ID' and shift the values of 'target_act_feat' by -1
     shifted_features = OCEL.groupby('Case_ID')[target_act_feat].shift(-1).fillna(0)
     OCEL['Next_Activity'] = OCEL.groupby('Case_ID')['Activity'].shift(-1).fillna(0)
+    
     # Add the shifted features to the 'enr_train' DataFrame
     OCEL = pd.concat([OCEL, shifted_features.add_prefix('Next_')], axis=1)
     if not add_last_case:
         OCEL = OCEL.loc[OCEL['Activity'] != '!']
-    OCEL['Position'] = OCEL.groupby('Case_ID').cumcount() + 1
+    OCEL['Position'] = OCEL.groupby('Case_ID').cumcount() + 1#
+    OCEL['Trace_Len'] = OCEL.groupby('Case_ID')['Position'].transform('max')
     OCEL = OCEL.sort_values(['Case_ID','Timestamp'])
     return OCEL
 
