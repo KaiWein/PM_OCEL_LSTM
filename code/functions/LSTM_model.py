@@ -33,8 +33,8 @@ def LSTM_MODEL(X, y_a, y_t, y_tr,filename):
 
     model.compile(loss={'act_output': 'categorical_crossentropy', 'time_output': 'mae', 'timeR_output': 'mae'}, optimizer='nadam')
 
-    early_stopping = EarlyStopping(monitor='val_loss', patience=50)
-    model_checkpoint = ModelCheckpoint('./output_files/models/model_'+filename+'_{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss',
+    early_stopping = EarlyStopping(monitor='val_loss', patience=5)
+    model_checkpoint = ModelCheckpoint('./output_files/models/model_'+filename+'.h5', monitor='val_loss',
                                     verbose=0, save_best_only=True, save_weights_only=False, mode='auto')
     lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=15, verbose=0, mode='auto', min_delta=0.0001,
                                 cooldown=0, min_lr=0)
@@ -42,4 +42,4 @@ def LSTM_MODEL(X, y_a, y_t, y_tr,filename):
     history = model.fit(X, {'act_output': y_a, 'time_output': y_t, 'timeR_output': y_tr}, validation_split=0.2, verbose=2,
             callbacks=[early_stopping, model_checkpoint, lr_reducer], batch_size=max_trace_length, epochs=500)
     # list all data in history
-    return history
+    return history, model_checkpoint
