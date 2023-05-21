@@ -60,8 +60,9 @@ def prepare_flat_ocel(fn, flatten_on, flattening = True,filter = None, printen_f
 def gen_enriched_single_plus_csv(OCEL,flatted_by, drops_col,csvname, printen = False):
     """This generates the enriched and the single logs for an flattend OCEL"""
     OCEL = OCEL.rename(columns={flatted_by:'Case_ID'})
+    OCEL.dropna(subset=['Case_ID'], inplace=True)
+    OCEL = OCEL[OCEL['Case_ID'] != '']
     enriched_log = OCEL.set_index('Case_ID').reset_index().drop(columns=drops_col).sort_values(['Case_ID','Timestamp'])
-    enriched_log['Amount_Items'] = [len(t) for t in enriched_log['Items']]
     enriched_log.to_csv(f'../data/{csvname}_enriched.csv')
     single_log = OCEL.set_index('Case_ID').reset_index()[['Case_ID','Activity','Timestamp']].sort_values(['Case_ID','Timestamp'])
     single_log.to_csv(f'../data/{csvname}_single.csv')
@@ -71,6 +72,14 @@ def gen_enriched_single_plus_csv(OCEL,flatted_by, drops_col,csvname, printen = F
     return enriched_log
 
 def generate_features(OCEL, add_last_case=False, columns_to_encode = ['Activity', 'Customers']):
+    # gen features thath sayes if it is in package
+    if 'Packages' in OCEL.columns:
+        OCEL['In_Package'] = (OCEL['Packages'] != "").astype(int)
+    if 'Items' in OCEL.columns:  
+            OCEL['Amount_Items'] = [len(t) for t in OCEL['Items']]
+    if 'Orders' in OCEL.columns:
+        OCEL['Amount_Orders'] = [len(t) for t in OCEL['Orders']]
+    
     OCEL = time_features(OCEL=OCEL)
     # ad the ! as an indicater for the end of trace
     if ('!' not in list(OCEL['Activity'].unique())):
@@ -87,22 +96,16 @@ def generate_features(OCEL, add_last_case=False, columns_to_encode = ['Activity'
         # Concatenate the new rows with the original DataFrame, sort by 'Case_ID' and 'Timestamp'
         OCEL = pd.concat([OCEL, new_rows], ignore_index=True).sort_values(['Case_ID','Timestamp'])
     
-    # gen features thath sayes if it is in package
-    if 'Packages' in OCEL.columns:
-        OCEL['In_Package'] = (OCEL['Packages'] != "").astype(int)
-    
     ## one hot encoding
     OCEL = onehot_encode(OCEL, columns_to_encode)
-    target_act_feat = list(filter(lambda k: 'Act_' in k, OCEL.columns))
+    target_act_feat = list(filter(lambda k: 'Act_' in k, OCEL.columns)) + ['Activity']
     # Group by 'Case_ID' and shift the values of 'target_act_feat' by -1
     shifted_features = OCEL.groupby('Case_ID')[target_act_feat].shift(-1).fillna(0)
-    OCEL['Next_Activity'] = OCEL.groupby('Case_ID')['Activity'].shift(-1).fillna(0)
-    
     # Add the shifted features to the 'enr_train' DataFrame
     OCEL = pd.concat([OCEL, shifted_features.add_prefix('Next_')], axis=1)
     if not add_last_case:
         OCEL = OCEL.loc[OCEL['Activity'] != '!']
-    OCEL['Position'] = OCEL.groupby('Case_ID').cumcount() + 1#
+    OCEL['Position'] = OCEL.groupby('Case_ID').cumcount() + 1
     OCEL['Trace_Len'] = OCEL.groupby('Case_ID')['Position'].transform('max')
     OCEL = OCEL.sort_values(['Case_ID','Timestamp'])
     return OCEL

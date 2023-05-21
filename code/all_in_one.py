@@ -11,13 +11,14 @@ from sklearn import metrics
 
 np.random.seed(42)
 source = "running-example"
-
-flatten_by = 'Orders' # input("Enter the value for flatten_by (Orders, Items or Packages): ")
-single_log = 'False'  # input("Enter the value for single_log (True/False): ")
-complete = 'False'  # input("Enter the value for complete (True/False): ")
+flatten_by = 'Packages' # input("Enter the value for flatten_by (Orders, Items or Packages): ")
+single_log = 'False' # input("Enter the value for single_log (True/False): ")
+if flatten_by == 'Packages':
+    complete = 'True'
+else:
+    complete = 'True' # input("Enter the value for complete (True/False): ")
 testing_other_remaining = False
 add_customer = 0
-
 # Error handling for invalid input values
 if flatten_by not in ['Orders', 'Items', 'Packages']:
     raise ValueError(

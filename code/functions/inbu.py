@@ -2,7 +2,10 @@ import numpy as np
 from functions import prep
 
 def generating_inputs(OCEL, num_of_features, max_trace_length, taf, act, divisor_next, divisor_since, divisor_remaining, single=False, custf=None, test=False, prefix_length=0):
- 
+    pack_flag = 'In_Package' in OCEL.columns
+    item_flag = 'Amount_Items' in OCEL.columns
+    order_flag = 'Amount_Orders' in OCEL.columns
+
 
     trace_length = OCEL['Trace_Len'].values
     OCEL = OCEL[trace_length >= prefix_length].reset_index(drop= True)
@@ -18,12 +21,20 @@ def generating_inputs(OCEL, num_of_features, max_trace_length, taf, act, divisor
     if not single and custf is not None:
         cust_pos = len(custf)
         onehot_offset = act_pos + cust_pos
-        pos_Amount_Items = onehot_offset + 5
-        pos_In_Package = onehot_offset + 6
-
         cust_values = OCEL[custf].values
-        amount_items_values = OCEL['Amount_Items'].values
-        in_package_values = OCEL['In_Package'].values
+        i = 5
+        if pack_flag:
+            in_package_values = OCEL['In_Package'].values
+            pos_In_Package = onehot_offset + i
+            i = i +1
+        if item_flag:
+            amount_items_values = OCEL['Amount_Items'].values
+            pos_Amount_Items = onehot_offset + i
+            i = i +1
+        if order_flag:
+            amount_orders_values = OCEL['Amount_Orders'].values
+            pos_orders_Items = onehot_offset + i
+            i = i +1
 
     else:
         onehot_offset = act_pos
@@ -55,8 +66,12 @@ def generating_inputs(OCEL, num_of_features, max_trace_length, taf, act, divisor
             X[i, leftpad:, pos_Time_Since_Start] = time_start_values[i - posi + 1:i + 1]
             X[i, leftpad:, pos_Time_Since_Midnight] = time_midnight_values[i - posi + 1:i + 1]
             X[i, leftpad:, pos_Weekday] = weekday_values[i - posi + 1:i + 1]
-            X[i, leftpad:, pos_Amount_Items] = amount_items_values[i - posi + 1:i + 1]
-            X[i, leftpad:, pos_In_Package] = in_package_values[i - posi + 1:i + 1]
+            if pack_flag:
+                X[i, leftpad:, pos_In_Package] = in_package_values[i - posi + 1:i + 1]
+            if item_flag:
+                X[i, leftpad:, pos_Amount_Items] = amount_items_values[i - posi + 1:i + 1]
+            if order_flag:
+                X[i, leftpad:, pos_orders_Items] = amount_orders_values[i - posi + 1:i + 1]
 
     elif single:
         for i in range(number_of_train_cases):
