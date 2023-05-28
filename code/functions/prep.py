@@ -57,7 +57,7 @@ def prepare_flat_ocel(fn, flatten_on, flattening = True,filter = None, printen_f
 
 #generating the csv files for the imput
 
-def gen_enriched_single_plus_csv(OCEL,flatted_by, drops_col,csvname, printen = False):
+def gen_enriched_single_plus_csv(OCEL,flatted_by, drops_col,csvname, printen = False, single = True):
     """This generates the enriched and the single logs for an flattend OCEL"""
     OCEL = OCEL.rename(columns={flatted_by:'Case_ID'})
     OCEL.dropna(subset=['Case_ID'], inplace=True)
@@ -69,10 +69,15 @@ def gen_enriched_single_plus_csv(OCEL,flatted_by, drops_col,csvname, printen = F
     if printen:
         pd.display(enriched_log[120:140])
         pd.display(single_log[120:140])
-    return enriched_log
+    if not single:
+        return enriched_log
+    if single:
+        return single_log
 
-def generate_features(OCEL, add_last_case=False, columns_to_encode = ['Activity', 'Customers']):
+def generate_features(OCEL,single = False, add_last_case=False, columns_to_encode = ['Activity', 'Customers']):
     # gen features thath sayes if it is in package
+    if single:
+        columns_to_encode = ['Activity']
     if 'Packages' in OCEL.columns:
         OCEL['In_Package'] = (OCEL['Packages'] != "").astype(int)
     if 'Items' in OCEL.columns:  
