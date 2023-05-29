@@ -155,7 +155,6 @@ def onehot_encode(OCEL, columns_to_encode):
     return OCEL
 
 def gen_traces_and_maxlength_of_trace(OCEL):
-
     activity_sequences = OCEL.groupby('Case_ID')['Activity'].apply(lambda x: ''.join(x)).reset_index()
     maxlen = max([len(x) for x in activity_sequences['Activity']]) + 1
     # maxlen = max(map(lambda x: len(x), activity_sequences))

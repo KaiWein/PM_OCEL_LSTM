@@ -83,7 +83,7 @@ print(f"Length of act_feat: {len(act_feat)}, Length of cust_feat: {len(cust_feat
 max_trace_length = prep.gen_traces_and_maxlength_of_trace(ocel)[1]
 target_act_length = len(target_act_feat)
 number_of_train_cases = len(ocel_train)
-num_of_features = len(feature_select) - (len(ocel['In_Package'].unique()) == 1)
+num_of_features = len(feature_select) if 'In_Package' not in ocel.columns else len(feature_select) - (len(ocel['In_Package'].unique()) == 1)
 print(f"Number of train cases: {number_of_train_cases}, Max trace length: {max_trace_length}, Number of features: {num_of_features}")
 print(target_act_feat_dict)
 print(act_feat_dict)
@@ -113,10 +113,9 @@ if single_log:
 else:
     model_file = csvname + '_enriched'
 print(model_file)
-history, best_model_name= LSTM_model.LSTM_MODEL(X_train, y_train_a, y_train_t, y_train_tr,filename=model_file)
+history, best_model_name, early_stopping= LSTM_model.LSTM_MODEL(X_train, y_train_a, y_train_t, y_train_tr,filename=model_file)
 
 print(best_model_name.best)
-os.path.basename(best_model_name.filepath)
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
 plt.title('model loss')
@@ -125,9 +124,10 @@ plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
 plt.show()
 
+epoch = early_stopping.stopped_epoch - 50
+val_loss = min(history.history['val_loss'])
 
-
-modelname = os.path.basename(best_model_name.filepath)
+modelname = model_file + '_{epoch:02d}-{val_loss:.2f}.h5'
 model = load_model(f'./output_files/models/{modelname}')
 
 X_test,y_test_a, y_test_t, y_test_tr = inbu.generating_inputs(OCEL=ocel_test,

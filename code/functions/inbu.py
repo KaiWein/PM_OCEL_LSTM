@@ -2,7 +2,9 @@ import numpy as np
 from functions import prep
 
 def generating_inputs(OCEL, num_of_features, max_trace_length, taf, act, divisor_next, divisor_since, divisor_remaining, normalize= False, custf=None, test=False, prefix_length=0):
-    pack_flag = 'In_Package' in OCEL.columns and (len(OCEL['In_Package'].unique()) > 1)
+    pack_flag = False
+    if 'In_Package' in OCEL.columns:
+        pack_flag =  len(OCEL['In_Package'].unique()) > 1
     item_flag = 'Amount_Items' in OCEL.columns
     order_flag = 'Amount_Orders' in OCEL.columns
     trace_length = OCEL['Trace_Len'].values
