@@ -81,7 +81,7 @@ def generate_features(OCEL,single = False, add_last_case=False, columns_to_encod
     if 'Packages' in OCEL.columns:
         OCEL['In_Package'] = (OCEL['Packages'] != "").astype(int)
     if 'Items' in OCEL.columns:  
-            OCEL['Amount_Items'] = [len(t) for t in OCEL['Items']]
+        OCEL['Amount_Items'] = [len(t) for t in OCEL['Items']]
     if 'Orders' in OCEL.columns:
         OCEL['Amount_Orders'] = [len(t) for t in OCEL['Orders']]
     
@@ -150,6 +150,8 @@ def onehot_encode(OCEL, columns_to_encode):
         if 'Customers' in columns_to_encode:
             customer_encoded = pd.get_dummies(OCEL['Customers'], dtype=int, prefix='Cust')
             OCEL = pd.concat([OCEL, customer_encoded], axis=1)
+            if "Cust_0" in OCEL.columns:
+                OCEL = OCEL.drop("Cust_0", axis=1)
     return OCEL
 
 def gen_traces_and_maxlength_of_trace(OCEL):
