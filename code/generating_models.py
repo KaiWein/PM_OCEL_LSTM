@@ -15,12 +15,13 @@ source = "running-example"
 ## some static variables for testing 
 testing_other_remaining = False
 add_customer = 1
-normalize = False
+normalize = True
 
 flatten_by = input("Enter the value for flatten_by (Orders, Items or Packages): ")
 single_log = input("Enter the value for single_log (True/False): ")
 if flatten_by == 'Packages':
     complete = 'True'
+    add_customer = 0
 else:
     complete = input("Enter the value for complete (True/False): ")
 # Error handling for invalid input values
