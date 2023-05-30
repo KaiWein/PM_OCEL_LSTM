@@ -135,7 +135,8 @@ plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
 plt.show()
 
-modelname = model_file + f"_{epoch:02d}-{val_loss:.2f}.h5"
+modelname = 'model_' + model_file + f"_{epoch:02d}-{val_loss:.2f}.h5"
+
 model = load_model(f'./output_files/models/{modelname}')
 
 X_test,y_test_a, y_test_t, y_test_tr = inbu.generating_inputs(OCEL=ocel_test,
@@ -164,11 +165,12 @@ y_tr1 = y_tr * divisorTR
 
 columns_to_drop = [col for col in ocel_test.columns if 'Act_' in col] + \
                   [col for col in ocel_test.columns if 'Cust_' in col] + \
-                  [ 'Customers', 'Next_Time_Since_Start',
-                   'Next_Time_Since_Midnight', 'Next_Weekday', 
+                  ['Customers', 'Next_Time_Since_Start',
+                   'Next_Time_Since_Midnight', 'Next_Weekday',
                    'Position', 'Time_Since_Midnight', 'Weekday'] + other_features
 
-output_ocel = ocel_test.drop(columns=columns_to_drop).copy()
+columns_to_drop_existing = [col for col in columns_to_drop if col in ocel_test.columns]
+output_ocel = ocel_test.drop(columns=columns_to_drop_existing).copy()
 output_ocel['Pred_Activity'] = pred_act_list
 output_ocel['Pred_Time_Diff'] = y_t1
 output_ocel['Pred_Remaining_Time'] = y_tr1

@@ -9,20 +9,24 @@ import numpy as np
 
 
 
+# Load data from the file
 with open('output_files/settings.pkl', 'rb') as file:
-    (
-        num_of_features,
-        max_trace_length,
-        target_act_feat,
-        act_feat,
-        cust_feat,
-        divisor,
-        divisor2,
-        divisorTR,
-        single_log,
-        target_act_feat_dict,
-        modelname
-    ) = pickle.load(file)
+    loaded_data = pickle.load(file)
+
+# Access the loaded data
+num_of_features = loaded_data['num_of_features']
+max_trace_length = loaded_data['max_trace_length']
+target_act_feat = loaded_data['target_act_feat']
+act_feat = loaded_data['act_feat']
+cust_feat = loaded_data['cust_feat']
+divisor = loaded_data['divisor']
+divisor2 = loaded_data['divisor2']
+divisorTR = loaded_data['divisorTR']
+single_log = loaded_data['single_log']
+target_act_feat_dict = loaded_data['target_act_feat_dict']
+modelname = loaded_data['modelname']
+normalize = loaded_data['normalize']
+other_features = loaded_data['other_features']
 
 model = load_model(f'./output_files/models/{modelname}')
 ocel_test = pd.read_csv('./output_files/folds/test.csv')
@@ -60,12 +64,14 @@ for prefix_length in prefix_lengths:
     y_tr1 = y_tr * divisorTR
 
     columns_to_drop = [col for col in ocel_test.columns if 'Act_' in col] + \
-                      [col for col in ocel_test.columns if 'Cust_' in col] + \
-                      ['Items', 'Customers', 'Packages', 'Next_Time_Since_Start',
-                       'Next_Time_Since_Midnight', 'Next_Weekday', 'In_Package',
-                       'Position', 'Time_Since_Midnight', 'Weekday', 'Amount_Items']
+                    [col for col in ocel_test.columns if 'Cust_' in col] + \
+                    ['Customers', 'Next_Time_Since_Start',
+                    'Next_Time_Since_Midnight', 'Next_Weekday',
+                    'Position', 'Time_Since_Midnight', 'Weekday'] + other_features
+
+    columns_to_drop_existing = [col for col in columns_to_drop if col in ocel_test.columns]
     trace_length = ocel_test['Trace_Len'].values
-    output_ocel = ocel_test[trace_length >= prefix_length].reset_index(drop= True).drop(columns=columns_to_drop).copy()
+    output_ocel = ocel_test[trace_length >= prefix_length].reset_index(drop= True).drop(columns=columns_to_drop_existing).copy()
     output_ocel['Pred_Activity'] = pred_act_list
     output_ocel['Pred_Time_Diff'] = y_t1
     output_ocel['Pred_Remaining_Time'] = y_tr1

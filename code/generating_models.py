@@ -135,7 +135,8 @@ plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
 plt.show()
 
-modelname = model_file + f"_{epoch:02d}-{val_loss:.2f}.h5"
+modelname = 'model_' + model_file + f"_{epoch:02d}-{val_loss:.2f}.h5"
+
 print(f'The best model has the name {modelname}')
 data = {
     'num_of_features': num_of_features,
@@ -148,7 +149,9 @@ data = {
     'divisorTR': divisorTR,
     'single_log': single_log,
     'target_act_feat_dict': target_act_feat_dict,
-    'modelname': modelname
+    'modelname': modelname,
+    'normalize': normalize,
+    'other_features': other_features
 }
 
 # Write data to a file using pickle
