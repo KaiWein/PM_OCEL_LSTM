@@ -1,4 +1,4 @@
-from imp import load_module
+from keras.models import load_model
 import pickle
 from jellyfish import damerau_levenshtein_distance, levenshtein_distance
 import pandas as pd
@@ -24,7 +24,7 @@ with open('output_files/settings.pkl', 'rb') as file:
         modelname
     ) = pickle.load(file)
 
-model = load_module(f'./output_files/models/{modelname}')
+model = load_model(f'./output_files/models/{modelname}')
 ocel_test = pd.read_csv('./output_files/folds/test.csv')
 ocel_train = pd.read_csv('./output_files/folds/train.csv')
 # Generate inputs with varying prefix lengths
