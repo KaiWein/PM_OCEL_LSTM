@@ -57,7 +57,7 @@ print(act_dict)
 print(cust_dict)
 
 ## create the enriched and some more preprocessing as well as saving the single and enriched versions
-ocel = prep.gen_enriched_single_plus_csv(OCEL = ocel,flatted_by = flatten_by ,csvname = csvname, drops_col= drops_col_order)
+ocel = prep.gen_enriched_single_plus_csv(OCEL = ocel,flatted_by = flatten_by ,csvname = csvname, drops_col= drops_col_order, single = single_log)
 
 ## adding features
 ocel =prep.generate_features(ocel, single= single_log)
@@ -134,7 +134,7 @@ plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
 plt.show()
 
-modelname = model_file + '_{epoch:02d}-{val_loss:.2f}.h5'
+modelname = model_file + f"_{epoch:02d}-{val_loss:.2f}.h5"
 print(f'The best model has the name {modelname}')
 data = {
     'num_of_features': num_of_features,
