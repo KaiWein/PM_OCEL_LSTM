@@ -125,7 +125,7 @@ history, best_model_name, early_stopping= LSTM_model.LSTM_MODEL(X_train, y_train
 
 val_loss = min(history.history['val_loss'])
 val_loss2 = best_model_name.best
-epoch = early_stopping.stopped_epoch - 50
+epoch = early_stopping.stopped_epoch - 49
 print(f'The best value for the validation loss is  {val_loss} and was archived at the epoch {epoch}')
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
