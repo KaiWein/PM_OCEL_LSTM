@@ -1,13 +1,32 @@
+from imp import load_module
+import pickle
 from jellyfish import damerau_levenshtein_distance, levenshtein_distance
 import pandas as pd
 import distance
 from sklearn import metrics
 from functions import (prep, folding, inbu, LSTM_model)
-
 import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
 
+
+
+with open('output_files/settings.pkl', 'rb') as file:
+    (
+        num_of_features,
+        max_trace_length,
+        target_act_feat,
+        act_feat,
+        cust_feat,
+        divisor,
+        divisor2,
+        divisorTR,
+        single_log,
+        target_act_feat_dict,
+        modelname
+    ) = pickle.load(file)
+
+model = load_module(f'./output_files/models/{modelname}')
+ocel_test = pd.read_csv('./output_files/folds/test.csv')
+ocel_train = pd.read_csv('./output_files/folds/train.csv')
 # Generate inputs with varying prefix lengths
 prefix_lengths = range(2, max_trace_length-1)  # List of prefix lengths to consider
 results = []
