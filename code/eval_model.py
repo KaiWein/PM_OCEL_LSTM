@@ -1,3 +1,4 @@
+import pickle
 from keras.models import load_model
 from jellyfish import damerau_levenshtein_distance, levenshtein_distance
 import pandas as pd
@@ -7,9 +8,29 @@ from functions import (prep, folding, inbu, LSTM_model)
 import numpy as np
 import pandas as pd
 
+with open('output_files/settings.pkl', 'rb') as file:
+    (
+        num_of_features,
+        max_trace_length,
+        target_act_feat,
+        act_feat,
+        cust_feat,
+        divisor,
+        divisor2,
+        divisorTR,
+        single_log,
+        target_act_feat_dict,
+        modelname
+    ) = pickle.load(file)
 
-modelname = 'model_Orders_filter_single_128-1.30.h5'
+# modelname = 'model_Orders_filter_single_128-1.30.h5'
 model = load_model(f'./output_files/models/{modelname}')
+ocel_test = pd.read_csv('./output_files/folds/test.csv')
+ocel_train = pd.read_csv('./output_files/folds/train.csv')
+
+
+
+
 
 X_test,y_test_a, y_test_t, y_test_tr = inbu.generating_inputs(OCEL=ocel_test,
                                                                   num_of_features=num_of_features,
