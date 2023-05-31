@@ -33,7 +33,7 @@ target_act_length = len(target_act_feat)
 print(f"Number of train cases: {number_of_train_cases}, Max trace length: {max_trace_length}, Number of features: {num_of_features}\n")
 
 
-X_train,y_train_a, y_train_t, y_train_tr = inbu.generating_inputs(ocel_train=ocel_train,ocel=ocel,setting_input=setting_inputs,
+X_train,y_train_a, y_train_t, y_train_tr = inbu.generating_inputs(ocel_fold=ocel_train,ocel=ocel,setting_input=setting_inputs,
                                                                   dn= divisor, ds= divisor2, dr= divisorTR)
 
 print(f"Shape of X_train: {X_train.shape}")
