@@ -1,39 +1,35 @@
-import pickle
+from functions import (inbu,prep,setting,folding)
 from keras.models import load_model
 from jellyfish import damerau_levenshtein_distance, levenshtein_distance
-import pandas as pd
-import distance
 from sklearn import metrics
-from functions import inbu
-
 import numpy as np
 import pandas as pd
+import distance
 
-# Load data from the file
-with open('output_files/settings.pkl', 'rb') as file:
-    loaded_data = pickle.load(file)
+setting_inputs = setting.inputdef()
+csvname = f"{setting_inputs['flatten_by']}_complete" if setting_inputs['complete'] else f"{setting_inputs['flatten_by']}_filter"
+# Define model_file based on single_log value
+model_file = f"{csvname}_single" if setting_inputs['single_log'] else f"{csvname}_enriched"
 
-# Access the loaded data
-num_of_features = loaded_data['num_of_features']
-max_trace_length = loaded_data['max_trace_length']
-target_act_feat = loaded_data['target_act_feat']
-act_feat = loaded_data['act_feat']
-cust_feat = loaded_data['cust_feat']
-divisor = loaded_data['divisor']
-divisor2 = loaded_data['divisor2']
-divisorTR = loaded_data['divisorTR']
-single_log = loaded_data['single_log']
-target_act_feat_dict = loaded_data['target_act_feat_dict']
-modelname = loaded_data['modelname']
-normalize = loaded_data['normalize']
-other_features = loaded_data['other_features']
-model_file = loaded_data['model_file']
-pos_ex = loaded_data['pos_ex']
+# prep the ocel and reading
+# ocel, *_ = prep.prep_ocel_complete(setting_inputs=setting_inputs,csvname=csvname)
+# ocel_train, ocel_test = folding.folding_train_test(ocel, csvname= model_file)
+## define some static variables 
 
-# modelname = 'model_Orders_filter_single_128-1.30.h5'
+modelname = input('Enter the model name (in the directory output_files/models):')
+if model_file not in modelname:
+    raise ValueError(f"{model_file} is not a substring of {modelname}")
+
 model = load_model(f'./output_files/models/{modelname}')
+ocel = pd.read_csv(f'./output_files/folds/{model_file}_all.csv')
 ocel_test = pd.read_csv(f'./output_files/folds/{model_file}_test.csv')
-ocel_train = pd.read_csv(f'./output_files/folds/{model_file}_train.csv')
+# ocel_train = pd.read_csv(f'./output_files/folds/{model_file}_train.csv')
+divisor = np.mean(ocel['Time_Diff'])  # average time between events
+divisor2 = np.mean(ocel['Time_Since_Start'])  # average time between current and first events
+divisorTR = np.mean(ocel['Remaining_Time'])  # average time instance remaining
+divisor3 = ocel.groupby('Case_ID')['Time_Since_Start'].apply(lambda x: (x.iloc[-1] - x).mean()).mean()
+num_of_features, max_trace_length, act_feat,cust_feat, target_act_feat, target_act_feat_dict, other_features = setting.feature_dimensios(ocel=ocel,setting_input=setting_inputs)
+
 # Generate inputs with varying prefix lengths
 prefix_lengths = range(2, max_trace_length-1)  # List of prefix lengths to consider
 results = []
@@ -42,18 +38,9 @@ for prefix_length in prefix_lengths:
     print(f"Results for Prefix Length {prefix_length}:")
     
     # Generate inputs with the current prefix length
-    X_test,y_test_a, y_test_t, y_test_tr = inbu.generating_inputs(OCEL=ocel_test,
-                                                                    num_of_features=num_of_features,
-                                                                    max_trace_length=max_trace_length,
-                                                                    taf=target_act_feat,
-                                                                    act=act_feat,
-                                                                    custf=cust_feat,
-                                                                    divisor_next=divisor,
-                                                                    divisor_since=divisor2,
-                                                                    divisor_remaining=divisorTR,
-                                                                    normalize = normalize, 
-                                                                    prefix_length=prefix_length,
-                                                                    position_exclude=pos_ex)
+    X_test,y_test_a, y_test_t, y_test_tr = inbu.generating_inputs(ocel_fold=ocel_test,ocel=ocel,setting_input=setting_inputs,
+                                                                  dn= divisor, ds= divisor2, dr= divisorTR,
+                                                                    prefix_length=prefix_length)
     # Make predictions with the model
     y = model.predict(X_test, verbose=1)
     y_char = y[0][:][:]

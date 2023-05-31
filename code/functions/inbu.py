@@ -4,7 +4,7 @@ from functions import prep,setting
 def generating_inputs(ocel_fold,ocel,setting_input, dn, ds,dr, prefix_length=0):
     poex = setting_input['pos_ex']
     normalize = setting_input['normalize']
-    nof, mtl, act,custf, taf, _ = setting.feature_dimensios(ocel=ocel,setting_input=setting_input)
+    nof, mtl, act,custf, taf, *_ = setting.feature_dimensios(ocel=ocel,setting_input=setting_input)
     
     pack_flag = False
     if 'In_Package' in ocel_fold.columns:

@@ -12,22 +12,23 @@ csvname = f"{setting_inputs['flatten_by']}_complete" if setting_inputs['complete
 model_file = f"{csvname}_single" if setting_inputs['single_log'] else f"{csvname}_enriched"
 
 # prep the ocel and reading
-ocel, act_dict, cust_dict = prep.prep_ocel_complete(setting_inputs=setting_inputs,csvname=csvname)
-ocel_train, ocel_test = folding.folding_train_test(ocel, csvname= model_file)
+# ocel, *_ = prep.prep_ocel_complete(setting_inputs=setting_inputs,csvname=csvname)
+# ocel_train, ocel_test = folding.folding_train_test(ocel, csvname= model_file)
 ## define some static variables 
-divisor = np.mean(ocel['Time_Diff'])  # average time between events
-divisor2 = np.mean(ocel['Time_Since_Start'])  # average time between current and first events
-divisorTR = np.mean(ocel['Remaining_Time'])  # average time instance remaining
-divisor3 = ocel.groupby('Case_ID')['Time_Since_Start'].apply(lambda x: (x.iloc[-1] - x).mean()).mean()
-num_of_features, max_trace_length, act_feat,cust_feat, target_act_feat, target_act_feat_dict, other_features = setting.feature_dimensios(ocel=ocel,setting_input=setting_inputs)
 
 modelname = input('Enter the model name (in the directory output_files/models):')
 if model_file not in modelname:
     raise ValueError(f"{model_file} is not a substring of {modelname}")
 
 model = load_model(f'./output_files/models/{modelname}')
-
-
+ocel = pd.read_csv(f'./output_files/folds/{model_file}_all.csv')
+ocel_test = pd.read_csv(f'./output_files/folds/{model_file}_test.csv')
+# ocel_train = pd.read_csv(f'./output_files/folds/{model_file}_train.csv')
+divisor = np.mean(ocel['Time_Diff'])  # average time between events
+divisor2 = np.mean(ocel['Time_Since_Start'])  # average time between current and first events
+divisorTR = np.mean(ocel['Remaining_Time'])  # average time instance remaining
+divisor3 = ocel.groupby('Case_ID')['Time_Since_Start'].apply(lambda x: (x.iloc[-1] - x).mean()).mean()
+num_of_features, max_trace_length, act_feat,cust_feat, target_act_feat, target_act_feat_dict, other_features = setting.feature_dimensios(ocel=ocel,setting_input=setting_inputs)
 
 X_test, y_test_a, y_test_t, y_test_tr = inbu.generating_inputs(ocel_fold=ocel_test,ocel=ocel,setting_input=setting_inputs,
                                                                   dn= divisor, ds= divisor2, dr= divisorTR)
