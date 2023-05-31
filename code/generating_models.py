@@ -1,8 +1,11 @@
+from functions import (prep, folding, inbu, LSTM_model)
+
+from matplotlib import pyplot as plt
+
+import numpy as np
 import pickle
 import time
-from functions import (prep, folding, inbu, LSTM_model)
-import numpy as np
-from matplotlib import pyplot as plt
+
 np.random.seed(42)
 
 source = "running-example"
@@ -134,10 +137,10 @@ plt.legend(['train', 'test'], loc='upper left')
 plt.show()
 
 modelname = 'model_' + model_file + f"_{epoch:02d}-{val_loss:.2f}.h5"
+print(f'The best model has the name {modelname}\n')
 with open(f'output_files/history/{modelname}_history.pkl', 'wb') as file:
     pickle.dump(history.history, file)
 
-print(f'The best model has the name {modelname}\n')
 data = {
     'num_of_features': num_of_features,
     'max_trace_length': max_trace_length,

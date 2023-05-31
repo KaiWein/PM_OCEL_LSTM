@@ -1,13 +1,13 @@
-import pickle
-from keras.models import load_model
-from jellyfish import damerau_levenshtein_distance, levenshtein_distance
-import pandas as pd
-import distance
-from sklearn import metrics
 from functions import inbu
 
-import numpy as np
+from keras.models import load_model
+from jellyfish import damerau_levenshtein_distance, levenshtein_distance
+from sklearn import metrics
 
+import pickle
+import numpy as np
+import pandas as pd
+import distance
 
 # Load data from the file
 with open('output_files/settings.pkl', 'rb') as file:
