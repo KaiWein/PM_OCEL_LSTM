@@ -27,10 +27,12 @@ target_act_feat_dict = loaded_data['target_act_feat_dict']
 modelname = loaded_data['modelname']
 normalize = loaded_data['normalize']
 other_features = loaded_data['other_features']
+model_file = loaded_data['model_file']
 
+# modelname = 'model_Orders_filter_single_128-1.30.h5'
 model = load_model(f'./output_files/models/{modelname}')
-ocel_test = pd.read_csv('./output_files/folds/test.csv')
-ocel_train = pd.read_csv('./output_files/folds/train.csv')
+ocel_test = pd.read_csv(f'./output_files/folds/{model_file}_test.csv')
+ocel_train = pd.read_csv(f'./output_files/folds/{model_file}_train.csv')
 # Generate inputs with varying prefix lengths
 prefix_lengths = range(2, max_trace_length-1)  # List of prefix lengths to consider
 results = []

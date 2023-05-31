@@ -3,6 +3,7 @@ from keras.models import load_model
 from jellyfish import damerau_levenshtein_distance, levenshtein_distance
 import pandas as pd
 import distance
+from sklearn import metrics
 from functions import (prep, folding, inbu, LSTM_model)
 
 import numpy as np
@@ -26,11 +27,12 @@ target_act_feat_dict = loaded_data['target_act_feat_dict']
 modelname = loaded_data['modelname']
 normalize = loaded_data['normalize']
 other_features = loaded_data['other_features']
+model_file = loaded_data['model_file']
 
 # modelname = 'model_Orders_filter_single_128-1.30.h5'
 model = load_model(f'./output_files/models/{modelname}')
-ocel_test = pd.read_csv('./output_files/folds/test.csv')
-ocel_train = pd.read_csv('./output_files/folds/train.csv')
+ocel_test = pd.read_csv(f'./output_files/folds/{model_file}_test.csv')
+ocel_train = pd.read_csv(f'./output_files/folds/{model_file}_train.csv')
 
 
 X_test,y_test_a, y_test_t, y_test_tr = inbu.generating_inputs(OCEL=ocel_test,
@@ -73,11 +75,13 @@ output_ocel['Damerau'] = output_ocel.apply(lambda row: 1 - (damerau_levenshtein_
 output_ocel['Damerau'] = output_ocel['Damerau'].clip(lower=0)
 output_ocel['Jaccard'] = output_ocel.apply(lambda row: 1 - distance.jaccard(row['Pred_Activity'], row['Next_Activity']), axis=1)
 
-output_ocel
-from sklearn import metrics
-
-
-print(metrics.mean_absolute_error(output_ocel['Pred_Time_Diff']/ (24 * 60 * 60),output_ocel['Next_Time_Diff']/ (24 * 60 * 60)))
-print(metrics.mean_absolute_error(output_ocel['Pred_Remaining_Time']/ (24 * 60 * 60),output_ocel['Next_Remaining_Time']/ (24 * 60 * 60)))
-print(metrics.mean_squared_error(output_ocel['Pred_Time_Diff']/ (24 * 60 * 60),output_ocel['Next_Time_Diff']/ (24 * 60 * 60),squared=False))
-print(metrics.mean_squared_error(output_ocel['Pred_Remaining_Time']/ (24 * 60 * 60),output_ocel['Next_Remaining_Time']/ (24 * 60 * 60),squared=False))
+act_comp = output_ocel['Pred_Activity'] == output_ocel['Next_Activity'] 
+print(f'The accuracy of the activation prediction is {sum(act_comp)/len(act_comp)}')
+MAE_Time_diff = metrics.mean_absolute_error(output_ocel['Pred_Time_Diff']/ (24 * 60 * 60),output_ocel['Next_Time_Diff']/ (24 * 60 * 60))
+MAE_rem_time = metrics.mean_absolute_error(output_ocel['Pred_Remaining_Time']/ (24 * 60 * 60),output_ocel['Next_Remaining_Time']/ (24 * 60 * 60))
+RMSE_Time_diff = metrics.mean_squared_error(output_ocel['Pred_Time_Diff']/ (24 * 60 * 60),output_ocel['Next_Time_Diff']/ (24 * 60 * 60),squared=False)
+RMSE_rem_time = metrics.mean_squared_error(output_ocel['Pred_Remaining_Time']/ (24 * 60 * 60),output_ocel['Next_Remaining_Time']/ (24 * 60 * 60),squared=False)
+print(f'MAE of the time between events in days {MAE_Time_diff}')
+print(f'MAE of the remaining time in days {MAE_rem_time}')
+# print(f'RMSE of the time between events in days {RMSE_Time_diff}')
+# print(f'RMSE of the remaining time in days {RMSE_rem_time}')

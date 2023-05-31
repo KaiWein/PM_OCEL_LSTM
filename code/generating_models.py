@@ -19,30 +19,38 @@ normalize = True
 
 flatten_by = input("Enter the value for flatten_by (Orders, Items or Packages): ")
 single_log = input("Enter the value for single_log (True/False): ")
-if flatten_by == 'Packages':
-    complete = 'True'
-    add_customer = 0
-else:
-    complete = input("Enter the value for complete (True/False): ")
+
 # Error handling for invalid input values
 if flatten_by not in ['Orders', 'Items', 'Packages']:
     raise ValueError("Wrong Input: flatten_by must be one of ['Orders', 'Items', 'Packages']")
 
 if single_log.lower() not in ['true', 'false', '1', '0']:
     raise ValueError("Wrong Input: single_log must be a boolean value (True/False)")
+# Convert input values to boolean
+single_log = single_log.lower() in ['true', '1']
+
+if flatten_by == 'Packages':
+    complete = 'True'
+    add_customer = 0
+else:
+    complete = input("Enter the value for complete (True/False): ")
 
 if complete.lower() not in ['true', 'false', '1', '0']:
     raise ValueError("Wrong Input: complete must be a boolean value (True/False)")
-
-# Convert input values to boolean
-single_log = single_log.lower() in ['true', '1']
 complete = complete.lower() in ['true', '1'] 
+
 if complete:
     csvname = flatten_by  + '_complete'
     fl = None
 else:
     csvname = flatten_by  + '_filter'
     fl = prep.act_filter(flatten_by )
+if single_log:
+    model_file = csvname + '_single'
+else:
+    model_file = csvname + '_enriched'
+
+
 
 time_feat = ['Time_Diff', 'Time_Since_Start', 'Time_Since_Midnight','Weekday','Position']
 other_features = [] + int(flatten_by != 'Items') * ['Amount_Items'] + int(flatten_by != 'Packages') * ['In_Package'] + int(flatten_by != 'Orders') * ['Amount_Orders']
@@ -75,7 +83,7 @@ print(f"divisor3: {divisor3}")
 print(f'Amount of rows of the OCEL: {len(ocel)}')
 
 #folding the data 
-ocel_train, ocel_test = folding.folding_train_test(ocel,old_ver=False, csvsave= True)
+ocel_train, ocel_test = folding.folding_train_test(ocel,old_ver=False, csvsave= True, csvname= model_file)
 
 act_feat = list(filter(lambda k: k.startswith('Act_') and not k.startswith('Next_Act_'), ocel.columns))
 act_feat.remove('Act_!')
@@ -116,10 +124,6 @@ print(f"Shape of y_train_a: {y_train_a.shape}, this matches the desired shape (n
 print(f"Shape of y_train_t: {y_train_t.shape}, this matches the desired shape (number_of_train_cases, ): {(number_of_train_cases, )} => {y_train_t.shape ==(number_of_train_cases, )}")
 print(f"Shape of y_train_tr: {y_train_tr.shape}, this matches the desired shape (number_of_train_cases, ): {(number_of_train_cases, )} => {y_train_tr.shape ==(number_of_train_cases, )}")
 
-if single_log:
-    model_file = csvname + '_single'
-else:
-    model_file = csvname + '_enriched'
 print(f'For the following setting a model is now trained {model_file}')
 history, best_model_name, early_stopping= LSTM_model.LSTM_MODEL(X_train, y_train_a, y_train_t, y_train_tr,filename=model_file)
 
@@ -151,7 +155,9 @@ data = {
     'target_act_feat_dict': target_act_feat_dict,
     'modelname': modelname,
     'normalize': normalize,
-    'other_features': other_features
+    'other_features': other_features,
+    'model_file': model_file
+
 }
 
 # Write data to a file using pickle
