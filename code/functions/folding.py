@@ -5,7 +5,7 @@ from numpy.compat import unicode
 from sklearn.utils import shuffle
 import pandas as pd
 
-def folding_train_test(OCEL, split = 2/3 , random_state = 42, csvsave = False, csvname = "", old_ver = False):
+def folding_train_test(OCEL, split = 2/3 , random_state = 42, csvname = "", old_ver = False):
     case_ids = OCEL['Case_ID'].unique()
     # 
     if old_ver:
@@ -26,10 +26,10 @@ def folding_train_test(OCEL, split = 2/3 , random_state = 42, csvsave = False, c
 
     train_data = OCEL[OCEL['Case_ID'].isin(train_case_ids)].reset_index(drop= True)
     test_data = OCEL[OCEL['Case_ID'].isin(test_case_ids)].reset_index(drop= True)
-    if csvsave:
-        OCEL.to_csv(f'./output_files/folds/{csvname}_all.csv')
-        train_data.to_csv(f'./output_files/folds/{csvname}_train.csv')
-        test_data.to_csv(f'./output_files/folds/{csvname}_test.csv')
+
+    OCEL.to_csv(f'./output_files/folds/{csvname}_all.csv')
+    train_data.to_csv(f'./output_files/folds/{csvname}_train.csv')
+    test_data.to_csv(f'./output_files/folds/{csvname}_test.csv')
     return train_data, test_data
 
 

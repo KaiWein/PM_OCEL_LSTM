@@ -1,67 +1,69 @@
 import numpy as np
-from functions import prep
+from functions import prep,setting
 
-def generating_inputs(OCEL, num_of_features, max_trace_length, taf, act, divisor_next, divisor_since,
-                       divisor_remaining, normalize= False, custf=None, prefix_length=0,
-                       position_exclude = False):
-    pack_flag = False
-    if 'In_Package' in OCEL.columns:
-        pack_flag =  len(OCEL['In_Package'].unique()) > 1
-    item_flag = 'Amount_Items' in OCEL.columns
-    order_flag = 'Amount_Orders' in OCEL.columns
-    trace_length = OCEL['Trace_Len'].values
-    OCEL = OCEL[trace_length >= prefix_length].reset_index(drop= True)
+def generating_inputs(ocel_fold,ocel,setting_input, dn, ds,dr, prefix_length=0):
+    poex = setting_input['pos_ex']
+    normalize = setting_input['normalize']
+    nof, mtl, act,custf, taf, _ = setting.feature_dimensios(ocel=ocel,setting_input=setting_input)
     
-    number_of_train_cases = len(OCEL)
+    pack_flag = False
+    if 'In_Package' in ocel_fold.columns:
+        pack_flag =  len(ocel_fold['In_Package'].unique()) > 1
+    item_flag = 'Amount_Items' in ocel_fold.columns
+    order_flag = 'Amount_Orders' in ocel_fold.columns
+    trace_length = ocel_fold['Trace_Len'].values
+    ocel_fold = ocel_fold[trace_length >= prefix_length].reset_index(drop= True)
+    
+    notr = len(ocel_fold)
     act_pos = len(act) 
 
     if prefix_length != 0:
-        max_trace_length = prefix_length
+        mtl = prefix_length
     else:
-        prefix_length = max_trace_length + 1
-    X = np.zeros((number_of_train_cases, max_trace_length, num_of_features), dtype=np.float32)
+        prefix_length = mtl + 1
+    X = np.zeros((notr, mtl, nof), dtype=np.float32)
 
     if custf is not None:
         cust_pos = len(custf)
         onehot_offset = act_pos + cust_pos
-        cust_values = OCEL[custf].values
+        cust_values = ocel_fold[custf].values
         
     else:
         onehot_offset = act_pos
-    i = 5 - int(position_exclude)
+    i = 5 - int(poex)
     if pack_flag:
-        in_package_values = OCEL['In_Package'].values 
+        in_package_values = ocel_fold['In_Package'].values 
         pos_In_Package = onehot_offset + i
         i = i +1
     if item_flag:
-        max_amount_item = OCEL['Amount_Items'].max()
-        amount_items_values = OCEL['Amount_Items'].values / max_amount_item if normalize else  OCEL['Amount_Items'].values 
+        max_amount_item = ocel_fold['Amount_Items'].max()
+        amount_items_values = ocel_fold['Amount_Items'].values / max_amount_item if normalize else  ocel_fold['Amount_Items'].values 
         pos_Amount_Items = onehot_offset + i
         i = i +1
     if order_flag:
-        max_amount_order = OCEL['Amount_Orders'].max()
-        amount_orders_values = OCEL['Amount_Orders'].values / max_amount_order if normalize else OCEL['Amount_Orders'].values
+        max_amount_order = ocel_fold['Amount_Orders'].max()
+        amount_orders_values = ocel_fold['Amount_Orders'].values / max_amount_order if normalize else ocel_fold['Amount_Orders'].values
         pos_orders_Items = onehot_offset + i
         i = i +1
     pos_Time_Diff = onehot_offset
     pos_Time_Since_Start = onehot_offset + 1
     pos_Time_Since_Midnight = onehot_offset + 2
     pos_Weekday = onehot_offset + 3
-    if not position_exclude:
+    if not poex:
         pos_Position = onehot_offset + 4
 
-    pos = OCEL['Position'].values
-    trace_length = OCEL['Trace_Len'].values
-    act_values = OCEL[act].values[: :] 
-    position_values = OCEL['Position'].values 
-    time_diff_values = OCEL['Time_Diff'].values / divisor_next if normalize else OCEL['Time_Diff'].values
-    time_start_values = OCEL['Time_Since_Start'].values  / divisor_since if normalize else OCEL['Time_Since_Start'].values 
-    time_midnight_values = OCEL['Time_Since_Midnight'].values  / 86400 if normalize else OCEL['Time_Since_Midnight'].values
-    weekday_values = OCEL['Weekday'].values  / 7 if normalize else OCEL['Weekday'].values
+    pos = ocel_fold['Position'].values
+    trace_length = ocel_fold['Trace_Len'].values
+    act_values = ocel_fold[act].values[: :] 
+    position_values = ocel_fold['Position'].values 
+    time_diff_values = ocel_fold['Time_Diff'].values / dn if normalize else ocel_fold['Time_Diff'].values
+    time_start_values = ocel_fold['Time_Since_Start'].values  / ds if normalize else ocel_fold['Time_Since_Start'].values 
+    time_midnight_values = ocel_fold['Time_Since_Midnight'].values  / 86400 if normalize else ocel_fold['Time_Since_Midnight'].values
+    weekday_values = ocel_fold['Weekday'].values  / 7 if normalize else ocel_fold['Weekday'].values
 
-    for i in range(number_of_train_cases):
+    for i in range(notr):
         posi = min(pos[i], prefix_length)
-        leftpad = max_trace_length - posi
+        leftpad = mtl - posi
 
         X[i, leftpad:, :act_pos] = act_values[i - posi + 1:i + 1, :]
         if custf is not None:
@@ -70,7 +72,7 @@ def generating_inputs(OCEL, num_of_features, max_trace_length, taf, act, divisor
         X[i, leftpad:, pos_Time_Since_Start] = time_start_values[i - posi + 1:i + 1]
         X[i, leftpad:, pos_Time_Since_Midnight] = time_midnight_values[i - posi + 1:i + 1]
         X[i, leftpad:, pos_Weekday] = weekday_values[i - posi + 1:i + 1]
-        if not position_exclude:
+        if not poex:
             X[i, leftpad:, pos_Position] = position_values[i - posi + 1:i + 1]
 
         if pack_flag:
@@ -80,8 +82,8 @@ def generating_inputs(OCEL, num_of_features, max_trace_length, taf, act, divisor
         if order_flag:
             X[i, leftpad:, pos_orders_Items] = amount_orders_values[i - posi + 1:i + 1] 
 
-    y_a = OCEL.loc[:, taf].to_numpy(dtype=np.float32)
-    y_t = OCEL['Next_Time_Diff'].to_numpy(dtype=np.float32) / divisor_next if normalize else OCEL['Next_Time_Diff'].to_numpy(dtype=np.float32)
-    y_tr = OCEL['Next_Remaining_Time'].to_numpy(dtype=np.float32) / divisor_remaining if normalize else OCEL['Next_Remaining_Time'].to_numpy(dtype=np.float32)
+    y_a = ocel_fold.loc[:, taf].to_numpy(dtype=np.float32)
+    y_t = ocel_fold['Next_Time_Diff'].to_numpy(dtype=np.float32) / dn if normalize else ocel_fold['Next_Time_Diff'].to_numpy(dtype=np.float32)
+    y_tr = ocel_fold['Next_Remaining_Time'].to_numpy(dtype=np.float32) / dr if normalize else ocel_fold['Next_Remaining_Time'].to_numpy(dtype=np.float32)
 
     return X, y_a, y_t, y_tr

@@ -11,11 +11,12 @@ def act_filter(on):
         print('Wrong input must be Orders, Items or Packages')
 
 ## preparing the cel
-def prepare_flat_ocel(fn, flatten_on, flattening = True,filter = None, printen_flat = False):
+def prepare_flat_ocel(setting_inputs, printen_flat = False ):
+    fl = None if setting_inputs['complete'] else act_filter(setting_inputs['flatten_by'])
     """gets an filename from the source data and prepare it. transform columns. one-hot-encode activities and customer.
     This is adjustet for only the running-example OCEL. 
     With this we can also directly generate a filtered version(based on activitys)"""
-    OCEL = pd.read_csv('../sourcedata/%s.csv' % fn)
+    OCEL = pd.read_csv('../sourcedata/running-example.csv')
     OCEL['ocel:timestamp']=  pd.to_datetime(OCEL['ocel:timestamp'])
     col_transform = {"ocel:eid": "Event_ID", "ocel:timestamp": "Timestamp", "ocel:activity": "Activity", "ocel:type:items": "Items",
                     "ocel:type:products": "Products", "ocel:type:customers":"Customers", "ocel:type:orders":"Orders",
@@ -28,8 +29,8 @@ def prepare_flat_ocel(fn, flatten_on, flattening = True,filter = None, printen_f
     OCEL['Packages']=  OCEL['Packages'].fillna('')
     OCEL['Packages']=  OCEL['Packages'].apply(lambda x: x.strip('][').split(', ')).apply(lambda x: [t.replace("'","") for t in x]).apply(lambda x: x[-1])
     OCEL['Customers']=  OCEL['Customers'].apply(lambda x: x[-1])
-    if filter is not None:
-        OCEL = OCEL[OCEL['Activity'].isin(filter)]
+    if fl is not None:
+        OCEL = OCEL[OCEL['Activity'].isin(fl)]
 
     # Perform label encoding with letters and create a dictionary
     act_uni = OCEL['Activity'].unique()
@@ -44,22 +45,31 @@ def prepare_flat_ocel(fn, flatten_on, flattening = True,filter = None, printen_f
     # pack_dict = {label: chr(ord('a') + i) for i, label in enumerate(pack_uni)}
     # ocel['Packages'] = ocel['Packages'].map(pack_dict)
     """Flattens the OCEL log but do not remove any columns"""
-    if flattening:
-        OCEL = OCEL.explode(flatten_on).reset_index(drop=True)
-        if printen_flat:
-            print(f'size of normal OCEL:{OCEL.size}')
-            pd.display(OCEL[OCEL['Event_ID']== 594])
-            print(f'size of flattend OCEL:{OCEL.size}')
-            pd.display(OCEL[OCEL['Event_ID']== 594])
-            pd.display(OCEL.head())
-    OCEL = OCEL.sort_values([flatten_on,'Timestamp'])
+    OCEL = OCEL.explode(setting_inputs['flatten_by']).reset_index(drop=True)
+    if printen_flat:
+        print(f'size of normal OCEL:{OCEL.size}')
+        pd.display(OCEL[OCEL['Event_ID']== 594])
+        print(f'size of flattend OCEL:{OCEL.size}')
+        pd.display(OCEL[OCEL['Event_ID']== 594])
+        pd.display(OCEL.head())
+    OCEL = OCEL.sort_values([setting_inputs['flatten_by'],'Timestamp'])
     return OCEL, act_dict, cust_dict #, pack_dict
 
 #generating the csv files for the imput
+def prep_ocel_complete(setting_inputs,csvname):
+    ocel, act_dict, cust_dict = prepare_flat_ocel(setting_inputs)
+    print(act_dict)
+    print(cust_dict)
+    ## create the enriched and some more preprocessing as well as saving the single and enriched versions
+    ocel = gen_enriched_single_plus_csv(OCEL = ocel,setting_input=setting_inputs,csvname = csvname)
+    ## adding features
+    ocel =generate_features(ocel, setting_inputs)
+    #folding the data 
+    return ocel, act_dict, cust_dict
 
-def gen_enriched_single_plus_csv(OCEL,flatted_by, drops_col,csvname, printen = False, single = True):
+def gen_enriched_single_plus_csv(OCEL,setting_input, csvname, drops_col = ["weight", "price", "Event_ID", 'Products'], printen = False):
     """This generates the enriched and the single logs for an flattend OCEL"""
-    OCEL = OCEL.rename(columns={flatted_by:'Case_ID'})
+    OCEL = OCEL.rename(columns={setting_input['flatten_by']:'Case_ID'})
     OCEL.dropna(subset=['Case_ID'], inplace=True)
     OCEL = OCEL[OCEL['Case_ID'] != '']
     enriched_log = OCEL.set_index('Case_ID').reset_index().drop(columns=drops_col).sort_values(['Case_ID','Timestamp'])
@@ -69,13 +79,14 @@ def gen_enriched_single_plus_csv(OCEL,flatted_by, drops_col,csvname, printen = F
     if printen:
         pd.display(enriched_log[120:140])
         pd.display(single_log[120:140])
-    if not single:
+    if not setting_input['single_log']:
         return enriched_log
-    if single:
+    if setting_input['single_log']:
         return single_log
 
-def generate_features(OCEL,single = False, add_last_case=False, columns_to_encode = ['Activity', 'Customers']):
+def generate_features(OCEL,setting_input, add_last_case=False, columns_to_encode = ['Activity', 'Customers']):
     # gen features thath sayes if it is in package
+    single =setting_input['single_log']
     if single:
         columns_to_encode = ['Activity']
     if 'Packages' in OCEL.columns:
