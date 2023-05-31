@@ -1,13 +1,13 @@
-from keras.models import load_model
 import pickle
+from keras.models import load_model
 from jellyfish import damerau_levenshtein_distance, levenshtein_distance
 import pandas as pd
 import distance
 from sklearn import metrics
-from functions import (prep, folding, inbu, LSTM_model)
+from functions import inbu
+
 import numpy as np
-
-
+import pandas as pd
 
 # Load data from the file
 with open('output_files/settings.pkl', 'rb') as file:
@@ -28,6 +28,7 @@ modelname = loaded_data['modelname']
 normalize = loaded_data['normalize']
 other_features = loaded_data['other_features']
 model_file = loaded_data['model_file']
+pos_ex = loaded_data['pos_ex']
 
 # modelname = 'model_Orders_filter_single_128-1.30.h5'
 model = load_model(f'./output_files/models/{modelname}')
@@ -41,18 +42,18 @@ for prefix_length in prefix_lengths:
     print(f"Results for Prefix Length {prefix_length}:")
     
     # Generate inputs with the current prefix length
-    X_test, y_test_a, y_test_t, y_test_tr = inbu.generating_inputs(OCEL=ocel_test,
-                                                                  num_of_features=num_of_features,
-                                                                  max_trace_length=max_trace_length,
-                                                                  taf=target_act_feat,
-                                                                  act=act_feat,
-                                                                  custf=cust_feat,
-                                                                  divisor_next=divisor,
-                                                                  divisor_since=divisor2,
-                                                                  divisor_remaining=divisorTR,
-                                                                  single=single_log,
-                                                                  prefix_length=prefix_length)
-
+    X_test,y_test_a, y_test_t, y_test_tr = inbu.generating_inputs(OCEL=ocel_test,
+                                                                    num_of_features=num_of_features,
+                                                                    max_trace_length=max_trace_length,
+                                                                    taf=target_act_feat,
+                                                                    act=act_feat,
+                                                                    custf=cust_feat,
+                                                                    divisor_next=divisor,
+                                                                    divisor_since=divisor2,
+                                                                    divisor_remaining=divisorTR,
+                                                                    normalize = normalize, 
+                                                                    prefix_length=prefix_length,
+                                                                    position_exclude=pos_ex)
     # Make predictions with the model
     y = model.predict(X_test, verbose=1)
     y_char = y[0][:][:]

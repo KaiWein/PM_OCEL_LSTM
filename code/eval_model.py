@@ -4,10 +4,10 @@ from jellyfish import damerau_levenshtein_distance, levenshtein_distance
 import pandas as pd
 import distance
 from sklearn import metrics
-from functions import (prep, folding, inbu, LSTM_model)
+from functions import inbu
 
 import numpy as np
-import pandas as pd
+
 
 # Load data from the file
 with open('output_files/settings.pkl', 'rb') as file:
@@ -28,6 +28,8 @@ modelname = loaded_data['modelname']
 normalize = loaded_data['normalize']
 other_features = loaded_data['other_features']
 model_file = loaded_data['model_file']
+pos_ex = loaded_data['pos_ex']
+
 
 # modelname = 'model_Orders_filter_single_128-1.30.h5'
 model = load_model(f'./output_files/models/{modelname}')
@@ -43,8 +45,9 @@ X_test,y_test_a, y_test_t, y_test_tr = inbu.generating_inputs(OCEL=ocel_test,
                                                                   custf=cust_feat,
                                                                   divisor_next=divisor,
                                                                   divisor_since=divisor2,
+                                                                  divisor_remaining=divisorTR,
                                                                   normalize = normalize, 
-                                                                  divisor_remaining=divisorTR)
+                                                                  position_exclude=pos_ex)
 
 # y_t = y_t * divisor3
 
