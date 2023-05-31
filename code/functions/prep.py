@@ -150,12 +150,11 @@ def onehot_encode(OCEL, columns_to_encode):
     """ Does the one hot encoding"""
     # Check if one-hot encoded columns already exist in DataFrame
     existing_columns = [col for col in OCEL.columns if col.startswith('Act_') or col.startswith('Cust_')]
-    # Perform one-hot encoding only for new columns
-    if len(existing_columns) == 0:
-        # One-hot encode the activities
-        if 'Activity' in columns_to_encode:
-            activity_encoded = pd.get_dummies(OCEL['Activity'], dtype=int, prefix='Act')
-            OCEL = pd.concat([OCEL, activity_encoded], axis=1)
+    new_columns = [col for col in columns_to_encode if col not in existing_columns]
+
+    if 'Activity' in new_columns:
+        activity_encoded = pd.get_dummies(OCEL['Activity'], dtype=int, prefix='Act')
+        OCEL = pd.concat([OCEL, activity_encoded], axis=1)
 
         # One-hot encode the customers
         if 'Customers' in columns_to_encode:
