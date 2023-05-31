@@ -37,12 +37,12 @@ def generating_inputs(ocel_fold,ocel,setting_input, dn, ds,dr, prefix_length=0):
         i = i +1
     if item_flag:
         max_amount_item = ocel_fold['Amount_Items'].max()
-        amount_items_values = ocel_fold['Amount_Items'].values / max_amount_item if normalize else  ocel_fold['Amount_Items'].values 
+        amount_items_values = ocel_fold['Amount_Items'].values #/ max_amount_item if normalize else  ocel_fold['Amount_Items'].values 
         pos_Amount_Items = onehot_offset + i
         i = i +1
     if order_flag:
         max_amount_order = ocel_fold['Amount_Orders'].max()
-        amount_orders_values = ocel_fold['Amount_Orders'].values / max_amount_order if normalize else ocel_fold['Amount_Orders'].values
+        amount_orders_values = ocel_fold['Amount_Orders'].values #/ max_amount_order if normalize else ocel_fold['Amount_Orders'].values
         pos_orders_Items = onehot_offset + i
         i = i +1
     pos_Time_Diff = onehot_offset

@@ -1,5 +1,4 @@
 test/
-output_files/
 __pycache__/
 Test_ground.ipynb
 Prove_that_changes_work.ipynb
