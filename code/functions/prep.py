@@ -113,7 +113,6 @@ def generate_features(OCEL,single = False, add_last_case=False, columns_to_encod
     OCEL['Position'] = OCEL.groupby('Case_ID').cumcount() + 1
     OCEL['Trace_Len'] = OCEL.groupby('Case_ID')['Position'].transform('max')
     OCEL = OCEL.sort_values(['Case_ID','Timestamp'])
-    OCEL.to_csv('./output_files/folds/all.csv')
     return OCEL
 
 def time_features(OCEL):

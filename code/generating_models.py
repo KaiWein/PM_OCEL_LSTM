@@ -25,7 +25,6 @@ single_log = single_log.lower() in ['true', '1']
 
 if flatten_by == 'Packages':
     complete = 'True'
-    add_customer = 0
 else:
     complete = input("Enter the value for complete (True/False): ")
 
@@ -53,7 +52,7 @@ print(f"single_log: {single_log}")
 print(f"complete: {complete}")
 print(f"Add customer: {add_customer == 1}")
 print(f"Normalize: {normalize}")
-print(f"Positive examples: {pos_ex}\n")
+print(f"Position excluded: {pos_ex}\n")
 time.sleep(5)
 ## prep the ocel and reading
 ocel, act_dict, cust_dict = prep.prepare_flat_ocel(source, flatten_on= flatten_by , filter= fl)
