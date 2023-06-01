@@ -68,6 +68,6 @@ def feature_dimensios(ocel, setting_input):
     num_of_features = len(feature_select) - (len(ocel['In_Package'].unique()) == 1) if 'In_Package' in ocel.columns else len(feature_select)
     max_trace_length = prep.gen_traces_and_maxlength_of_trace(ocel)[1]
     
-    print(f"Length of act_feat: {len(act_feat)}, Length of cust_feat: {len(cust_feat)}")
+    # print(f"Length of act_feat: {len(act_feat)}, Length of cust_feat: {len(cust_feat)}")
     
     return num_of_features, max_trace_length, act_feat, cust_feat, target_act_feat, target_act_feat_dict, other_features
