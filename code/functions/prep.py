@@ -11,8 +11,8 @@ def act_filter(on):
         print('Wrong input must be Orders, Items or Packages')
 def prep_ocel_complete(setting_inputs, csvname):
     ocel, act_dict, cust_dict = prepare_flat_ocel(setting_inputs)
-    print(act_dict)
-    print(cust_dict)
+    # print(act_dict)
+    # print(cust_dict)
 
     # Create the enriched log and perform additional preprocessing, and save the single and enriched versions
     ocel = gen_enriched_single_plus_csv(OCEL=ocel, setting_input=setting_inputs, csvname=csvname)
